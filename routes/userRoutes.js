@@ -30,3 +30,28 @@ router.get('/customer/profile', verifyCustomer, async (req, res) => {
 
 module.exports = router;
 
+router.get('/customer/my-orders', verifyCustomer, async (req, res) => {
+    try {
+        const [orders] = await conn.promise().query(
+            `SELECT order_id, payment_type, subtotal, shipping_price,
+                    total_price, status, created_at
+             FROM orders
+             WHERE user_id = ?
+             ORDER BY created_at DESC`,
+            [req.customerId]
+        );
+
+        res.json({
+            success: true,
+            orders: orders
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Unable to fetch orders'
+        });
+    }
+});
+
+
