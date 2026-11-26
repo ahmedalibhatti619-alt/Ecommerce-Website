@@ -20,8 +20,8 @@
 
 const express = require('express');
 const router = express.Router();
-
-const { conn } = require('../Database/db_connection');
+const jwt = require('jsonwebtoken');
+const { conn, jwtSecret } = require('../Database/db_connection');
 const upload = require('../utils/uploadMiddleware');
 const { uploadImages, keyToUrl } = require('../utils/r2Upload');
 
@@ -54,6 +54,21 @@ function withDiscount(p) {
 // checkout flow (multi-item items array built from localStorage) — the
 // homepage sends the same shape either way.
 router.post('/orders', upload.single('screenshot'), (req, res) => {
+        let customerId = null;
+
+    const token = req.cookies?.customerToken;
+
+    if (token) {
+        try {
+            const decoded = jwt.verify(token, jwtSecret);
+
+            if (decoded.role === 'customer') {
+                customerId = decoded.id;
+            }
+        } catch (error) {
+            customerId = null;
+        }
+    }
     // ----- 0. Resolve payment type first — it decides whether a screenshot is even required. -----
     const rawPaymentType = (req.body.payment_type || 'COD').trim().toUpperCase();
     const paymentType = VALID_PAYMENT_TYPES.includes(rawPaymentType) ? rawPaymentType : 'COD';
@@ -123,10 +138,10 @@ router.post('/orders', upload.single('screenshot'), (req, res) => {
 
             // ----- 3. The order itself — buyer/shipping info + payment_type stored directly. -----
             conn.query(
-                `INSERT INTO orders
-                    (full_name, phone, email, city, province, postal_code, address, payment_type, status, subtotal, shipping_price, total_price)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', ?, ?, ?)`,
-                [full_name, phone, email, city, province, postal_code, address, paymentType, subtotal, shippingPrice, totalPrice],
+              `INSERT INTO orders
+    (user_id, full_name, phone, email, city, province, postal_code, address, payment_type, status, subtotal, shipping_price, total_price)
+ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', ?, ?, ?)`,
+[customerId, full_name, phone, email, city, province, postal_code, address, paymentType, subtotal, shippingPrice, totalPrice],
                 (orderErr, orderResult) => {
                     if (orderErr) return sendResponse(res, 500, false, 'Database error creating order', orderErr.message);
                     const orderId = orderResult.insertId;
