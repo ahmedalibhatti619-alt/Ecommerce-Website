@@ -41,4 +41,27 @@ function verifyAdmin(req, res, next) {
     });
 }
 
+function verifyCustomer(req, res, next) {
+    const token = req.cookies?.customerToken;
+
+    if (!token) {
+        return res.status(401).json({
+            success: false,
+            message: 'Please login first'
+        });
+    }
+
+    jwt.verify(token, jwtSecret, (err, decoded) => {
+        if (err || decoded.role !== 'customer') {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid or expired customer token'
+            });
+        }
+
+        req.customerId = decoded.id;
+        next();
+    });
+}
+
 module.exports = { verifyToken, verifyAdmin };
