@@ -64,4 +64,4 @@ function verifyCustomer(req, res, next) {
     });
 }
 
-module.exports = { verifyToken, verifyAdmin, verifyCustomer };
+const { verifyCustomer } = require('../middle/authMiddleware');
