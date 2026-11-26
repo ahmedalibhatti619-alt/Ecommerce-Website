@@ -134,6 +134,8 @@ CREATE TABLE IF NOT EXISTS product_media (
 CREATE TABLE IF NOT EXISTS orders (
     order_id BIGINT AUTO_INCREMENT PRIMARY KEY,
 
+    user_id INT NULL,
+
     full_name VARCHAR(100) NOT NULL,
 
     phone VARCHAR(30) NOT NULL,
@@ -168,6 +170,9 @@ CREATE TABLE IF NOT EXISTS orders (
     ) NOT NULL DEFAULT 'PENDING',
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    CONSTRAINT fk_orders_users
+FOREIGN KEY (user_id) REFERENCES users(user_id)
+ON DELETE SET NULL
 );
 
 
