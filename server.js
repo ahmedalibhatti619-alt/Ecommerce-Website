@@ -16,7 +16,8 @@ const initDatabase = require('./Database/initDB');
 const seedAdmins = require('./utils/seedAdmins');
 
 const homeRoutes = require('./routes/homeRoutes');
-const authRoutes = require('./routes/authRoutes');             // admin-only now
+const authRoutes = require('./routes/authRoutes');              // admin-only now
+const userAuthRoutes = require('./routes/userAuthRoutes');
 const storeFrontRoutes = require('./routes/storeFrontRoutes'); // public catalog — covers everything the old userCatalogRoutes did
 const orderRoutes = require('./routes/orderRoutes');           // guest checkout, replaces User_Routes/userOrderRoutes.js
 const reviewRoutes = require('./routes/reviewRoutes');         // public product reviews & ratings
@@ -52,6 +53,7 @@ app.use(express.static(path.join(__dirname, 'Frontend')));
 // Routes
 app.use('/', homeRoutes);
 app.use('/', authRoutes);
+app.use('/', userAuthRoutes);
 
 app.use('/api', storeFrontRoutes);
 app.use('/api', orderRoutes);
